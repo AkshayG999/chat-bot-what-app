@@ -15,10 +15,9 @@ const uploadWhatsAppDocument = async (fileName) => {
             `https://graph.facebook.com/v15.0/${process.env.WHATSAPP_PHONEID}/media`,
             form_data,
             {
-                headers: {
-                    ...form_data.getHeaders(),
+                headers: Object.assign({}, form_data.getHeaders(), {
                     'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`
-                }
+                })
             }
         );
         return resp.data;
