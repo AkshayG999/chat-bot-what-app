@@ -4,7 +4,8 @@
   "description": "This is a Node.js project.",
   "main": "index.html",
   "scripts": {
-    "start": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "local": "nodemon src/index.js",
     "build": "babel src -d dist"
   },
   "keywords": [],

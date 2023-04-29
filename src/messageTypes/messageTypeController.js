@@ -7,7 +7,7 @@ const { buttonReply } = require('../controllers/buttonReplyController')
 const messageTypes = async (req, res) => {
     try {
         const { entry, object } = req.body
-        // console.log(JSON.stringify(req.body, null, 2));
+        console.log(JSON.stringify(req.body, null, 2));
 
         res.sendStatus(200);
 
