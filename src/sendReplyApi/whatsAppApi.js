@@ -51,7 +51,7 @@ const sendMessageTemplate = async (templateName, from, component) => {
         }
 
     } catch (err) {
-        console.log(err.response.data)
+        console.log("template msg error=", err.message)
     }
 }
 
@@ -70,7 +70,7 @@ const listMessageSend = async (messageObject) => {
 
 
     } catch (err) {
-        console.log(err.response.data)
+        console.log("list message error=", err.message)
     }
 }
 
@@ -100,7 +100,7 @@ const textMessage = async (msg_body, from) => {
 
 
     } catch (err) {
-        console.log(err.response.data)
+        console.log(err.message)
     }
 }
 

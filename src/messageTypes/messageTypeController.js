@@ -17,15 +17,17 @@ const messageTypes = async (req, res) => {
             const { value } = changes[0]
             const { messages } = value  //msg Object 
 
-
+                 //text messsage reply
             if (entry && entry[0] && changes && changes[0] && value && messages && messages[0].text) {
 
                 return textReply(messages)
 
+                // Interactive message reply
             } else if (entry && entry[0] && changes && changes[0] && value && messages && messages[0].interactive) {
 
                 return interactiveReply(messages)
 
+                // Button message reply
             } else if (entry && entry[0] && changes && changes[0] && value && messages && messages[0].button) {
 
                 return buttonReply(messages)

@@ -10,17 +10,13 @@ const buttonReply = async (messages) => {
 
         console.log(messages[0])
         const { from, button } = messages[0]
+        const mobNumber = from.slice(2, 12)
 
         if (button.payload == 'Book a Bike') {
             stopTimer()
-            const userChatData = await WhatsAppSession.findOne({ mobileNumber: from.slice(2, 12) })
-            // console.log("user data", userChatData, userChatData.button)
+            await WhatsAppSession.findOneAndUpdate({ mobileNumber: mobNumber, button: " " }, { button: button.payload })
 
-            if (userChatData && userChatData.button === 'false') {
-                await WhatsAppSession.findOneAndUpdate({ mobileNumber: from.slice(2, 12) }, { button: button.payload }, { new: true })
-            }
-
-            const userCheck = await getWebUser(from.slice(2, 12))
+            const userCheck = await getWebUser(mobNumber)
 
             if (userCheck.data.length > 0) {
                 const component = [
@@ -46,7 +42,7 @@ const buttonReply = async (messages) => {
 
         } else if (button.payload == 'Book Now?') {
             stopTimer()
-            const userChatData = await WhatsAppSession.findOne({ mobileNumber: from.slice(2, 12) })
+            const userChatData = await WhatsAppSession.findOne({ mobileNumber: mobNumber })
             const cityName = userChatData.cityReply[0].title
             const locationName = userChatData.locationReply[0].title
             // console.log(cityName, locationName)
@@ -135,16 +131,18 @@ const buttonReply = async (messages) => {
 
         } else if (button.payload == 'My Bookings') {
 
+            await WhatsAppSession.findOneAndUpdate({ mobileNumber: mobNumber, button: " " }, { button: false })
+
             await sendMessageTemplate("my_bookings_button", from)
             return;
 
         } else if (button.payload == 'Current Booking') {
             stopTimer()
-            const userCheck = await getWebUser(from.slice(2, 12))
+            const userCheck = await getWebUser(mobNumber)
 
             let bookingDetails = await rentbookings(userCheck.data[0]._id, "ONGOING")
 
-            // No Any Booking Found
+            // If No Any Bookings Found
             if (bookingDetails.length == 0) {
                 console.log("no Current/ONGOING booking")
 
@@ -195,7 +193,7 @@ const buttonReply = async (messages) => {
 
         } else if (button.payload == 'Upcoming Booking') {
             stopTimer()
-            const userCheck = await getWebUser(from.slice(2, 12))
+            const userCheck = await getWebUser(mobNumber)
 
             let bookingDetails = await rentbookings(userCheck.data[0]._id, "BOOKED")
 
@@ -251,7 +249,7 @@ const buttonReply = async (messages) => {
 
         } else if (button.payload == 'Previous Booking') {
             stopTimer()
-            const userCheck = await getWebUser(from.slice(2, 12))
+            const userCheck = await getWebUser(mobNumber)
             console.log("webUserID", userCheck.data[0]._id)
 
             let bookingDetails = await rentbookings(userCheck.data[0]._id, "COMPLETED")
@@ -297,12 +295,12 @@ const buttonReply = async (messages) => {
             await sendMessageTemplate('more_previous_bookings', from)
 
             // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
-            startTimer(from)
+            startTimer(from, "registered")
             return;
 
         } else if (button.payload == 'Early Drop') {
             stopTimer()
-            const userCheck = await getWebUser(from.slice(2, 12))
+            const userCheck = await getWebUser(mobNumber)
             console.log("webUser", userCheck.data[0])
 
             let bookingDetails = await rentbookings(userCheck.data[0]._id, "ONGOING")
@@ -326,12 +324,12 @@ const buttonReply = async (messages) => {
 
             await sendMessageTemplate('early_extend_drop', from, component)
             // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
-            startTimer(from)
+            startTimer(from, "registered")
             return;
 
         } else if (button.payload == 'Extend Drop') {
             stopTimer()
-            const userCheck = await getWebUser(from.slice(2, 12))
+            const userCheck = await getWebUser(mobNumber)
             console.log("webUser", userCheck.data[0])
 
             let bookingDetails = await rentbookings(userCheck.data[0]._id, "ONGOING")
@@ -355,12 +353,12 @@ const buttonReply = async (messages) => {
 
             await sendMessageTemplate('exdend_drop', from, component)
             // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
-            startTimer(from)
+            startTimer(from, "registered")
             return;
 
         } else if (button.payload == 'Cancel Booking') {
             stopTimer()
-            const userCheck = await getWebUser(from.slice(2, 12))
+            const userCheck = await getWebUser(mobNumber)
             console.log("webUser", userCheck.data[0])
 
             let bookingDetails = await rentbookings(userCheck.data[0]._id, "BOOKED")
@@ -383,12 +381,12 @@ const buttonReply = async (messages) => {
 
             await sendMessageTemplate('cancel_booking', from, component)
             // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
-            startTimer(from)
+            startTimer(from, "registered")
             return;
 
         } else if (button.payload == 'Change Pickup Date & Time') {
             stopTimer()
-            const userCheck = await getWebUser(from.slice(2, 12))
+            const userCheck = await getWebUser(mobNumber)
             console.log("webUser", userCheck.data[0])
 
             let bookingDetails = await rentbookings(userCheck.data[0]._id, "BOOKED")
@@ -412,12 +410,14 @@ const buttonReply = async (messages) => {
 
             await sendMessageTemplate('change_pickup_date_time', from, component)
             // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
-            startTimer(from)
+            startTimer(from, "registered")
             return;
 
 
         } else if (button.payload == 'Any Other Queries (FAQ)' || button.payload == 'Have more Queries?') {
             stopTimer()
+            await WhatsAppSession.findOneAndUpdate({ mobileNumber: mobNumber, button: " " }, { button: false });
+
             await sendMessageTemplate("any_other_query_faq", from)
             return;
 

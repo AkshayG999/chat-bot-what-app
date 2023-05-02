@@ -19,6 +19,7 @@ const interactiveReply = async (messages) => {
     try {
 
         const { interactive, from } = messages[0]
+        const mobNumber = from.slice(2, 12)
         console.log(interactive)
 
         let row = await cityListRow()
@@ -32,12 +33,12 @@ const interactiveReply = async (messages) => {
                 title: interactive.list_reply.title
             }
 
-            const findUser = await WhatsAppSession.findOne({ mobileNumber: from.slice(2, 12) })
+            const findUser = await WhatsAppSession.findOne({ mobileNumber: mobNumber })
             if (!findUser) {
-                await WhatsAppSession.create({ mobileNumber: from.slice(2, 12), cityReply: [city] })
+                await WhatsAppSession.create({ mobileNumber: mobNumber, cityReply: [city] })
 
             } else {
-                await WhatsAppSession.findOneAndUpdate({ mobileNumber: from.slice(2, 12) }, { cityReply: [city] }, { new: true })
+                await WhatsAppSession.findOneAndUpdate({ mobileNumber: mobNumber }, { cityReply: [city] }, { new: true })
 
             }
 
@@ -63,6 +64,27 @@ const interactiveReply = async (messages) => {
                     return ({ id: `${index} ${location._id}`, title: location.name })
                 }
             })
+
+            // const localityList = await locality(interactive.list_reply.id);
+            // let row = [];
+            // for (let i = 0; i < localityList.data.length; i++) {
+            //     const location = localityList.data[i];
+            //     const breakPoint = location.name.indexOf("-");
+
+            //     if (breakPoint > -1) {
+            //         row.push({
+            //             id: `${i} ${location._id}`,
+            //             title: location.name.slice(0, breakPoint),
+            //             description: location.name.slice(breakPoint + 1)
+            //         });
+            //     } else {
+            //         row.push({
+            //             id: `${i} ${location._id}`,
+            //             title: location.name
+            //         });
+            //     }
+            // }
+
 
             // console.log(row)
             let listNumber = 1;
@@ -123,10 +145,10 @@ const interactiveReply = async (messages) => {
             }
 
             // add Location reply in DB
-            await WhatsAppSession.findOneAndUpdate({ mobileNumber: from.slice(2, 12) }, { locationReply: [location] }, { new: true })
+            await WhatsAppSession.findOneAndUpdate({ mobileNumber: mobNumber }, { locationReply: [location] }, { new: true })
 
             // User Register or Not In Boongg 
-            const userCheck = await getWebUser(from.slice(2, 12))
+            const userCheck = await getWebUser(mobNumber)
             // console.log(userCheck)
 
             if (userCheck.data.length > 0) {
@@ -144,44 +166,45 @@ const interactiveReply = async (messages) => {
             stopTimer()
             await sendMessageTemplate('booking_procedure_steps', from)
 
-            //------Document send-------
-            let guideLine_Upload = await uploadWhatsAppDocument("nodejs.pdf");
-            let component_1 = [
-                {
-                    "type": "header",
-                    "parameters": [
-                        {
-                            "type": "document",
-                            "document": {
-                                "id": guideLine_Upload.id,
-                                "filename": "General Driving Guidelines"
-                            }
-                        }
-                    ]
-                },
-            ];
+            // //------Document send-------
+            // let guideLine_Upload = await uploadWhatsAppDocument("nodejs.pdf");
+            // let component_1 = [
+            //     {
+            //         "type": "header",
+            //         "parameters": [
+            //             {
+            //                 "type": "document",
+            //                 "document": {
+            //                     "id": guideLine_Upload.id,
+            //                     "filename": "General Driving Guidelines"
+            //                 }
+            //             }
+            //         ]
+            //     },
+            // ];
 
-            await sendMessageTemplate('driving_guidelines', from, component_1);
+            // await sendMessageTemplate('driving_guidelines', from, component_1);
 
-            //------Document send-------
-            let terms_Upload = await uploadWhatsAppDocument("nodejs.pdf");
-            let component_2 = [
-                {
-                    "type": "header",
-                    "parameters": [
-                        {
-                            "type": "document",
-                            "document": {
-                                "id": terms_Upload.id,
-                                "filename": "Terms and Conditions"
-                            }
-                        }
-                    ]
-                },
-            ];
+            // //------Document send-------
+            // let terms_Upload = await uploadWhatsAppDocument("nodejs.pdf");
+            // let component_2 = [
+            //     {
+            //         "type": "header",
+            //         "parameters": [
+            //             {
+            //                 "type": "document",
+            //                 "document": {
+            //                     "id": terms_Upload.id,
+            //                     "filename": "Terms and Conditions"
+            //                 }
+            //             }
+            //         ]
+            //     },
+            // ];
 
-            await sendMessageTemplate('terms_and_conditions', from, component_2);
+            // await sendMessageTemplate('terms_and_conditions', from, component_2);
             // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
+
             startTimer(from)
             return;
 
@@ -209,7 +232,7 @@ const interactiveReply = async (messages) => {
 
         } else if (interactive.list_reply.title == 'Physical Damage') {
             stopTimer()
-            const userChatData = await WhatsAppSession.find({ mobileNumber: from.slice(2, 12) })
+            const userChatData = await WhatsAppSession.find({ mobileNumber: mobNumber })
 
             let storeUser = await getStoreUser(userChatData[0].locationReply[0].title)
             console.log(storeUser)
@@ -234,7 +257,7 @@ const interactiveReply = async (messages) => {
 
         } else if (interactive.list_reply.title == 'Bike Break down') {
             stopTimer()
-            const userChatData = await WhatsAppSession.find({ mobileNumber: from.slice(2, 12) })
+            const userChatData = await WhatsAppSession.find({ mobileNumber: mobNumber })
 
             let storeUser = await getStoreUser(userChatData[0].locationReply[0].title)
             console.log(storeUser)

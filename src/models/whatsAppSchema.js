@@ -6,7 +6,7 @@ const WhatsAppSchema = new mongoose.Schema({
     locationReply: [Object],
     button: {
         type: String,
-        default: false
+        default: " "
     }
 }, { timestamps: true })
 

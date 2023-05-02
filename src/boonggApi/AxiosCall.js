@@ -15,7 +15,7 @@ const cityList = async () => {
         return list
 
     } catch (err) {
-        console.log(err)
+        console.log(err.message)
     }
 }
 
@@ -34,7 +34,7 @@ const locality = async (CityName) => {
         return list
 
     } catch (err) {
-        console.log(err)
+        console.log(err.message)
     }
 }
 // Get User By mobile Number
@@ -44,7 +44,7 @@ const getWebUser = async (mobileNumber) => {
         return await axios.get(`${process.env.BOONGG_DEV_URL}/getwebuser/${mobileNumber}`)
 
     } catch (err) {
-        console.log(err)
+        console.log(err.message)
     }
 }
 
@@ -85,7 +85,7 @@ const getStoreUser = async (location, cityId) => {
         }
 
     } catch (err) {
-        console.log(err)
+        console.log(err.message)
     }
 
 }
@@ -119,7 +119,7 @@ const getStoreAdmin = async (_storeKey) => {
         return store_admin
 
     } catch (err) {
-        console.log(err)
+        console.log(err.message)
     }
 
 }
@@ -200,7 +200,7 @@ const rentbookings = async (webuserId, bookingType) => {
         }
 
     } catch (err) {
-        console.log(err)
+        console.log(err.message)
         return []
     }
 
