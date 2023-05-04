@@ -74,7 +74,7 @@ const getStoreUser = async (location, cityId) => {
                 return regex.test(item.locality);
             });
 
-            console.log("store list=", storeData)
+            // console.log("store list=", storeData)
 
             if (storeData == 0) {
 
@@ -104,7 +104,7 @@ const getStoreAdmin = async (_storeKey) => {
             }
         )
 
-        console.log("store Users/admin", storeUsers.data)
+        // console.log("store Users/admin", storeUsers.data)
 
         if (storeUsers.data.length == 0) {
             return [{ "mobileNumber": "8432113333" }]
@@ -166,7 +166,7 @@ const rentbookings = async (webuserId, bookingType) => {
                 rides.push(obj);
             }
         })
-        console.log("Ride=", rides)
+        // console.log("Ride=", rides)
 
         if (rides.length == 0) {
             return []
@@ -179,13 +179,13 @@ const rentbookings = async (webuserId, bookingType) => {
             const firstRides = rides.filter(booking => new Date(booking['Pickup_Date_and_Time']) > currentTime);
 
             firstRides.sort((a, b) => new Date(a['Pickup_Date_and_Time']) - new Date(b['Pickup_Date_and_Time']));
-            console.log("ride upcoming=", firstRides)
+            // console.log("ride upcoming=", firstRides)
             return firstRides;
 
         } else if (bookingType == 'COMPLETED') {
 
             rides.sort((a, b) => new Date(b['Drop_Date_and_Time']) - new Date(a['Drop_Date_and_Time']));
-            console.log("ride previous=", rides[0])
+            // console.log("ride previous=", rides[0])
             return rides;
 
         } else if (bookingType == 'ONGOING') {
@@ -195,7 +195,7 @@ const rentbookings = async (webuserId, bookingType) => {
             const firstRides = rides.filter(booking => new Date(booking['Drop_Date_and_Time']) > currentTime);
 
             firstRides.sort((a, b) => new Date(a['Pickup_Date_and_Time']) - new Date(b['Pickup_Date_and_Time']));
-            console.log("ride current=", firstRides)
+            // console.log("ride current=", firstRides)
             return firstRides;
         }
 
@@ -206,6 +206,24 @@ const rentbookings = async (webuserId, bookingType) => {
 
 }
 
-module.exports = { cityList, locality, getWebUser, getStoreUser, getStoreAdmin, rentbookings }
+const getAllStore = async () => {
+    try {
+        return await axios.get(`${process.env.BOONGG_DEV_URL}/stores`,
+            {},
+            {
+                headers: {
+                    "Authorization": process.env.AUTH_TOKEN
+
+                }
+            }
+        )
+
+
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+module.exports = { cityList, locality, getWebUser, getStoreUser, getStoreAdmin, rentbookings, getAllStore }
 
 

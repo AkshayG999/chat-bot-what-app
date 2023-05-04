@@ -13,7 +13,7 @@ const buttonReply = async (messages) => {
         const mobNumber = from.slice(2, 12)
 
         if (button.payload == 'Book a Bike') {
-            stopTimer()
+            stopTimer(from)
             await WhatsAppSession.findOneAndUpdate({ mobileNumber: mobNumber, button: " " }, { button: button.payload })
 
             const userCheck = await getWebUser(mobNumber)
@@ -41,7 +41,7 @@ const buttonReply = async (messages) => {
 
 
         } else if (button.payload == 'Book Now?') {
-            stopTimer()
+            stopTimer(from)
             const userChatData = await WhatsAppSession.findOne({ mobileNumber: mobNumber })
             const cityName = userChatData.cityReply[0].title
             const locationName = userChatData.locationReply[0].title
@@ -107,7 +107,7 @@ const buttonReply = async (messages) => {
             const parsedUrl = new URL(urlString, 'https://boongg.com/Search');
             const pathname = parsedUrl.pathname;
 
-            console.log("path", pathname);
+            // console.log("path", pathname);
 
             const component = [
                 {
@@ -130,14 +130,14 @@ const buttonReply = async (messages) => {
             return;
 
         } else if (button.payload == 'My Bookings') {
-
+            stopTimer(from)
             await WhatsAppSession.findOneAndUpdate({ mobileNumber: mobNumber, button: " " }, { button: false })
 
             await sendMessageTemplate("my_bookings_button", from)
             return;
 
         } else if (button.payload == 'Current Booking') {
-            stopTimer()
+            stopTimer(from)
             const userCheck = await getWebUser(mobNumber)
 
             let bookingDetails = await rentbookings(userCheck.data[0]._id, "ONGOING")
@@ -192,7 +192,7 @@ const buttonReply = async (messages) => {
             return;
 
         } else if (button.payload == 'Upcoming Booking') {
-            stopTimer()
+            stopTimer(from)
             const userCheck = await getWebUser(mobNumber)
 
             let bookingDetails = await rentbookings(userCheck.data[0]._id, "BOOKED")
@@ -248,7 +248,7 @@ const buttonReply = async (messages) => {
             return;
 
         } else if (button.payload == 'Previous Booking') {
-            stopTimer()
+            stopTimer(from)
             const userCheck = await getWebUser(mobNumber)
             console.log("webUserID", userCheck.data[0]._id)
 
@@ -292,14 +292,24 @@ const buttonReply = async (messages) => {
 
             await sendMessageTemplate('preivous_booking_details', from, component)
 
-            await sendMessageTemplate('more_previous_bookings', from)
+            const component_1 = [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": "https://boongg.com/my-bookings"
+                        }
+                    ]
+                }
+            ]
+            await sendMessageTemplate('more_previous_bookings', from, component_1)
 
-            // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
             startTimer(from, "registered")
             return;
 
         } else if (button.payload == 'Early Drop') {
-            stopTimer()
+            stopTimer(from)
             const userCheck = await getWebUser(mobNumber)
             console.log("webUser", userCheck.data[0])
 
@@ -317,6 +327,10 @@ const buttonReply = async (messages) => {
                         {
                             "type": "text",
                             "text": storeAdmin[0].mobileNumber
+                        },
+                        {
+                            "type": "text",
+                            "text": "https://boongg.com/my-bookings"
                         }
                     ]
                 }
@@ -328,7 +342,7 @@ const buttonReply = async (messages) => {
             return;
 
         } else if (button.payload == 'Extend Drop') {
-            stopTimer()
+            stopTimer(from)
             const userCheck = await getWebUser(mobNumber)
             console.log("webUser", userCheck.data[0])
 
@@ -346,6 +360,10 @@ const buttonReply = async (messages) => {
                         {
                             "type": "text",
                             "text": storeAdmin[0].mobileNumber
+                        },
+                        {
+                            "type": "text",
+                            "text": "https://boongg.com/my-bookings"
                         }
                     ]
                 }
@@ -357,7 +375,7 @@ const buttonReply = async (messages) => {
             return;
 
         } else if (button.payload == 'Cancel Booking') {
-            stopTimer()
+            stopTimer(from)
             const userCheck = await getWebUser(mobNumber)
             console.log("webUser", userCheck.data[0])
 
@@ -374,6 +392,10 @@ const buttonReply = async (messages) => {
                         {
                             "type": "text",
                             "text": storeAdmin[0].mobileNumber
+                        },
+                        {
+                            "type": "text",
+                            "text": "https://boongg.com/my-bookings"
                         }
                     ]
                 }
@@ -385,7 +407,7 @@ const buttonReply = async (messages) => {
             return;
 
         } else if (button.payload == 'Change Pickup Date & Time') {
-            stopTimer()
+            stopTimer(from)
             const userCheck = await getWebUser(mobNumber)
             console.log("webUser", userCheck.data[0])
 
@@ -403,6 +425,10 @@ const buttonReply = async (messages) => {
                         {
                             "type": "text",
                             "text": storeAdmin[0].mobileNumber
+                        },
+                        {
+                            "type": "text",
+                            "text": "https://boongg.com/my-bookings"
                         }
                     ]
                 }
@@ -415,26 +441,26 @@ const buttonReply = async (messages) => {
 
 
         } else if (button.payload == 'Any Other Queries (FAQ)' || button.payload == 'Have more Queries?') {
-            stopTimer()
+            stopTimer(from)
             await WhatsAppSession.findOneAndUpdate({ mobileNumber: mobNumber, button: " " }, { button: false });
 
             await sendMessageTemplate("any_other_query_faq", from)
             return;
 
         } else if (button.payload == 'Payment') {
-            stopTimer()
+            stopTimer(from)
             await sendMessageTemplate("how_do_make_payment", from)
             return;
 
         } else if (button.payload == 'How do I make Payments?') {
-            stopTimer()
+            stopTimer(from)
             await sendMessageTemplate("payment_acceptance", from)
             // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
             startTimer(from)
             return;
 
         } else if (button.payload == 'Booking') {
-            stopTimer()
+            stopTimer(from)
             const listInteractiveObject = {
                 type: "list",
                 body: {
@@ -485,7 +511,7 @@ const buttonReply = async (messages) => {
             return;
 
         } else if (button.payload == 'Damage') {
-            stopTimer()
+            stopTimer(from)
             const listInteractiveObject = {
                 type: "list",
                 body: {

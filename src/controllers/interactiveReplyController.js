@@ -1,6 +1,6 @@
 const WhatsAppSession = require('../models/whatsAppSchema')
 const { listMessageSend, sendMessageTemplate, textMessage } = require('../sendReplyApi/whatsAppApi')
-const { cityList, locality, getWebUser, getStoreUser } = require('../boonggApi/AxiosCall');
+const { cityList, locality, getWebUser, getStoreUser, getAllStore } = require('../boonggApi/AxiosCall');
 const { uploadWhatsAppDocument } = require('../sendReplyApi/uploadDoc')
 const { startTimer, stopTimer } = require('../timerReply/timerReply')
 
@@ -26,7 +26,7 @@ const interactiveReply = async (messages) => {
 
         if (row.some((city) => city.title == interactive.list_reply.title)) {
             console.log("user select city to get location= ", interactive.list_reply.title)
-            stopTimer()
+            stopTimer(from)
 
             let city = {
                 id: interactive.list_reply.id,
@@ -44,49 +44,34 @@ const interactiveReply = async (messages) => {
 
 
             const storeList = await getStoreUser("", interactive.list_reply.id)
+            const activeStores = storeList.filter(store => store.isActive == true);
+            // console.log(activeStores)
 
-
-            if (storeList.length == 0) {
+            if (activeStores.length == 0) {
                 await textMessage("We understand your interest in our Boongg renting service, but we are still in the process of expanding our coverage, and it is not yet available in your city", from)
                 return
             }
 
-            const localityList = await locality(interactive.list_reply.id)
-            let row = localityList.data.map((location, index) => {
+            let storeData = await getAllStore()
+            const cityStores = storeData.data.filter(obj => obj._city.name === interactive.list_reply.title && obj.isActive == true);
+            let localities = cityStores.map(item => item.locality[0]);
+
+            // console.log(localities);
+
+            let row = localities.map((location, index) => {
                 // console.log(localityList.data)
-                const breakPoint = location.name.indexOf("-")
+
+                const breakPoint = location.indexOf("-")
 
                 // console.log(location.name, breakPoint)
 
                 if (breakPoint > -1) {
-                    return ({ id: `${index} ${location._id}`, title: location.name.slice(0, breakPoint), description: location.name.slice(breakPoint + 1) })
+                    return ({ id: `${index}`, title: location.slice(0, breakPoint), description: location.slice(breakPoint + 1) })
                 } else {
-                    return ({ id: `${index} ${location._id}`, title: location.name })
+                    return ({ id: `${index}`, title: location })
                 }
             })
 
-            // const localityList = await locality(interactive.list_reply.id);
-            // let row = [];
-            // for (let i = 0; i < localityList.data.length; i++) {
-            //     const location = localityList.data[i];
-            //     const breakPoint = location.name.indexOf("-");
-
-            //     if (breakPoint > -1) {
-            //         row.push({
-            //             id: `${i} ${location._id}`,
-            //             title: location.name.slice(0, breakPoint),
-            //             description: location.name.slice(breakPoint + 1)
-            //         });
-            //     } else {
-            //         row.push({
-            //             id: `${i} ${location._id}`,
-            //             title: location.name
-            //         });
-            //     }
-            // }
-
-
-            // console.log(row)
             let listNumber = 1;
             for (let i = 0; i < row.length;) {
 
@@ -123,18 +108,72 @@ const interactiveReply = async (messages) => {
                 if (i >= row.length) {
                     i = row.length
                 }
-
             }
             return;
+
+
+
+            // const localityList = await locality(interactive.list_reply.id)
+            // let row = localityList.data.map((location, index) => {
+            //     // console.log(localityList.data)
+
+            //         const breakPoint = location.name.indexOf("-")
+
+            //         // console.log(location.name, breakPoint)
+
+            //         if (breakPoint > -1) {
+            //             return ({ id: `${index} ${location._id}`, title: location.name.slice(0, breakPoint), description: location.name.slice(breakPoint + 1) })
+            //         } else {
+            //             return ({ id: `${index} ${location._id}`, title: location.name })
+            //         } 
+            // })
+
+            // let listNumber = 1;
+            // for (let i = 0; i < row.length;) {
+
+            //     const listInteractiveObject = {
+            //         type: "list",
+
+            //         body: {
+            //             text: "Please select your Location :",
+            //         },
+            //         action: {
+            //             button: "Location List - " + listNumber,
+            //             sections: [
+            //                 {
+            //                     title: 'Choose Your Location',
+            //                     rows: row.slice(i, i + 10)
+            //                 },
+            //             ],
+            //         },
+
+            //     };
+
+            //     let messageObject = {
+            //         messaging_product: "whatsapp",
+            //         recipient_type: "individual",
+            //         to: from,
+            //         type: "interactive",
+            //         interactive: listInteractiveObject,
+            //     };
+
+            //     setTimeout(async () => await listMessageSend(messageObject), listNumber * 1000);
+
+            //     i = i + 10
+            //     listNumber++
+            //     if (i >= row.length) {
+            //         i = row.length
+            //     }
+
+            // }
+            // return;
 
         } else if (interactive.list_reply.id.split(' ')[0] >= 0 && interactive.list_reply.id.split(' ')[0] <= 50) {
 
             console.log("Location choose by User " + interactive.list_reply.id)
-            stopTimer();
+             stopTimer(from)
 
-            let location = {
-                id: interactive.list_reply.id.split(' ')[1],
-            }
+            let location = {}
 
             if (interactive.list_reply.description) {
 
@@ -163,75 +202,67 @@ const interactiveReply = async (messages) => {
             }
 
         } else if (interactive.list_reply.title == 'Booking Procedure') {
-            stopTimer()
+            stopTimer(from)
             await sendMessageTemplate('booking_procedure_steps', from)
+            await sendMessageTemplate('pre_pickup_instructions', from)
 
-            // //------Document send-------
-            // let guideLine_Upload = await uploadWhatsAppDocument("nodejs.pdf");
-            // let component_1 = [
-            //     {
-            //         "type": "header",
-            //         "parameters": [
-            //             {
-            //                 "type": "document",
-            //                 "document": {
-            //                     "id": guideLine_Upload.id,
-            //                     "filename": "General Driving Guidelines"
-            //                 }
-            //             }
-            //         ]
-            //     },
-            // ];
+            const urlString = `terms-of-service`;
+            const parsedUrl = new URL(urlString, 'https://boongg.com');
+            const pathname = parsedUrl.pathname;
 
-            // await sendMessageTemplate('driving_guidelines', from, component_1);
+            // console.log("path", parsedUrl);
 
-            // //------Document send-------
-            // let terms_Upload = await uploadWhatsAppDocument("nodejs.pdf");
-            // let component_2 = [
-            //     {
-            //         "type": "header",
-            //         "parameters": [
-            //             {
-            //                 "type": "document",
-            //                 "document": {
-            //                     "id": terms_Upload.id,
-            //                     "filename": "Terms and Conditions"
-            //                 }
-            //             }
-            //         ]
-            //     },
-            // ];
+            const component = [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": "Terms and Conditions"
+                        }
+                    ]
+                },
+                {
+                    "type": "button",
+                    "sub_type": "url",
+                    "index": "0",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": pathname.slice(1)
+                        }
+                    ]
+                },
+            ];
 
-            // await sendMessageTemplate('terms_and_conditions', from, component_2);
-            // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
-
+            await sendMessageTemplate('instructions_condition_redirect_msg', from, component)
             startTimer(from)
             return;
 
 
         } else if (interactive.list_reply.title == 'Rescheduling Policy') {
-            stopTimer()
+            stopTimer(from)
             await sendMessageTemplate('rescheduling_policy', from)
             // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
             startTimer(from)
             return;
 
         } else if (interactive.list_reply.title == 'Cancellation Policy') {
-            stopTimer()
+            stopTimer(from)
             await sendMessageTemplate('cancellation_policy', from)
             // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
             startTimer(from)
             return;
 
         } else if (interactive.list_reply.title == 'Fuel Policy') {
-            stopTimer()
+            stopTimer(from)
             await sendMessageTemplate('fuel_policy', from)
             // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
             startTimer(from)
             return;
 
         } else if (interactive.list_reply.title == 'Physical Damage') {
-            stopTimer()
+            stopTimer(from)
             const userChatData = await WhatsAppSession.find({ mobileNumber: mobNumber })
 
             let storeUser = await getStoreUser(userChatData[0].locationReply[0].title)
@@ -256,7 +287,7 @@ const interactiveReply = async (messages) => {
 
 
         } else if (interactive.list_reply.title == 'Bike Break down') {
-            stopTimer()
+            stopTimer(from)
             const userChatData = await WhatsAppSession.find({ mobileNumber: mobNumber })
 
             let storeUser = await getStoreUser(userChatData[0].locationReply[0].title)
@@ -281,7 +312,7 @@ const interactiveReply = async (messages) => {
 
 
         } else if (interactive.list_reply.title == 'Puncture Related issues') {
-            stopTimer()
+            stopTimer(from)
             await sendMessageTemplate("puncture_related_issues", from)
             // setTimeout(async () => { await sendMessageTemplate("last_conclusion_message", from) }, 15000);
             startTimer(from)
@@ -292,6 +323,5 @@ const interactiveReply = async (messages) => {
     } catch (err) {
 
     }
-
 }
 module.exports = { interactiveReply }
