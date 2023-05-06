@@ -1,6 +1,5 @@
 const axios = require('axios')
-require('dotenv').config()
-
+ 
 const sendMessageTemplate = async (templateName, from, component) => {
 
     try {

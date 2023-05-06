@@ -1,5 +1,5 @@
 const axios = require('axios')
-require('dotenv')
+// require('dotenv')
 
 // Get City List 
 const cityList = async () => {
@@ -177,9 +177,9 @@ const rentbookings = async (webuserId, bookingType) => {
             const currentTime = new Date();
             //  upcoming ride based on the current time
             const firstRides = rides.filter(booking => new Date(booking['Pickup_Date_and_Time']) > currentTime);
+            // console.log("ride upcoming=", firstRides)
 
             firstRides.sort((a, b) => new Date(a['Pickup_Date_and_Time']) - new Date(b['Pickup_Date_and_Time']));
-            // console.log("ride upcoming=", firstRides)
             return firstRides;
 
         } else if (bookingType == 'COMPLETED') {
